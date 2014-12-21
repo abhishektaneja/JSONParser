@@ -15,12 +15,6 @@ class JSONParser
 
     private $classObject = array();
 
-    protected $dataMissingException = false;
-
-    protected $invalidJSONException = false;
-
-    protected $jsonMapException = false;
-
     private $propertyAttributes = array(
         self::PROP_VALID => false,
         self::PROP_ACCESSIBLE => false,
@@ -36,9 +30,16 @@ class JSONParser
     {
         $jsonObj = json_decode($json);
         if (null == $jsonObj) {
+            throw new JSONParserException("Invalid json");
             return false;
         }
-        return $this->mapJSONToProperties($jsonObj, new ReflectionClass($obj));
+        try {
+            return $this->mapJSONToProperties($jsonObj, new ReflectionClass($obj));
+        }
+        catch(Exception $e){
+            throw new JSONParserException("Unable to map json", 0 , $e);
+        }
+        return null;
     }
 
     private function  mapJSONToProperties($jsonObj, ReflectionClass $refObj)
