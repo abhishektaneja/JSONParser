@@ -32,7 +32,7 @@ object(Employee)[6]
   protected 'firstName' => string 'Abhishek' (length=8)
   protected 'lastName' => string 'Taneja' (length=6)
   protected 'contact' => 
-    object(stdClass)[4]
-      public 'email' => string 'abhishek.taneja@live.com' (length=24)
-      public 'twitter' => string '@abhishek_taneja' (length=16)
+    object(Contact)[10]
+      protected 'email' => string 'abhishek.taneja@live.com' (length=24)
+      protected 'twitter' => string '@abhishek_taneja' (length=16)
 ```
