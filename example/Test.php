@@ -6,9 +6,15 @@
  * Time: 03:55 PM
  */
 
-include "../src/JSONParser.php";
-include "Employee.php";
+ini_set("display_errors", "ON");
+error_reporting(E_ALL);
+
+include "../src/autoload.php";
 
 $json = file_get_contents("test.json");
+
 $jsonParser = new JSONParser();
+
 $obj = $jsonParser->map($json, new Employee());
+
+var_dump($obj);

@@ -54,12 +54,13 @@ class JSONParser
             if($propertyAttributes[self::PROP_VALID] === true){
                 if($propertyAttributes[self::PROP_SETTER] != null){
                     $sMethod = $propertyAttributes[self::PROP_SETTER] -> name;
-                    $objValue = $value;
-                    $objClass = $this -> getClassFromNameSpace($refObj -> getNamespaceName(), $key);
-                    if (is_object($value) && $objClass != null) {
-                        $objValue = $this->mapJSONToProperties($value, new ReflectionClass(new $objClass));
+                    if (is_object($value)) {
+                        $objClass = $this -> getClassFromNameSpace($refObj -> getNamespaceName(), $key);
+                        if($objClass != null) {
+                            $value = $this->mapJSONToProperties($value, new ReflectionClass(new $objClass));
+                        }
                     }
-                    $classObj -> $sMethod($objValue);
+                    $classObj -> $sMethod($value);
                 }else{
                     if($propertyAttributes[self::PROP_ACCESSIBLE] === true) {
                         $classObj->$key = $value;
@@ -72,10 +73,7 @@ class JSONParser
 
     private function getClassFromNameSpace($classNameSpace, $subClassName){
         if ($classNameSpace != '\\') {
-            //create a full qualified namespace
-            if ($classNameSpace != '') {
-                return  $classNameSpace . '\\' . $subClassName;
-            }
+            return  $classNameSpace . '\\' . ucfirst($subClassName);
         }
         return null;
     }
