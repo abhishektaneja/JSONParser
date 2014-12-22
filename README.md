@@ -5,6 +5,8 @@ PHP JSONParser
 ####
 This will help to read a JSON and map it to a class object.
 
+* Requires an autoloader PSR-0 
+
 Eg: JSON -
 ```json
 {
