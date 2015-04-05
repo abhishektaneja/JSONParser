@@ -7,43 +7,58 @@
  */
 class Employee
 {
-    protected $firstName;
 
-    protected $lastName;
+    /**
+     * @JsonProperty("firstName")
+     */
+    private $name;
 
-    protected $contact;
+    /**
+     * @var
+     */
+    private $lastName;
+
+    /**
+     * @var
+     * @JsonProperty("contact")
+     */
+    public $contactInformation;
 
     /**
      * @return mixed
      */
-    public function getContact()
+    public function getContactInformation()
     {
-        return $this->contact;
+        return $this->contactInformation;
     }
 
     /**
-     * @param mixed $contact
+     * @param mixed $contactInformation
      */
-    public function setContact($contact)
+    public function setContactInformation($contactInformation)
     {
-        $this->contact = $contact;
+        $this->contactInformation = $contactInformation;
     }
+
+
 
     /**
      * @return mixed
      */
-    public function getFirstName()
+    public function getName()
     {
-        return $this->firstName;
+        return $this->name;
     }
 
     /**
-     * @param mixed $firstName
+     * @param mixed $name
      */
-    public function setFirstName($firstName)
+    public function setName($name)
     {
-        $this->firstName = $firstName;
+        $this->name = $name;
     }
+
+
 
     /**
      * @return mixed

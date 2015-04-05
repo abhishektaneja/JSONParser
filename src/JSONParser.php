@@ -12,8 +12,10 @@ class JSONParser
     const PROP_VALID = "isProperty";
     const PROP_ACCESSIBLE = "accessible";
     const PROP_SETTER = "setter";
+    const ANNOTATION_REG_X = "/@JsonProperty\(\"(.*)\"\)/";
 
     private $classObject = array();
+    private $attributePropertyMap = array();
 
     private $propertyAttributes = array(
         self::PROP_VALID => false,
@@ -35,36 +37,63 @@ class JSONParser
         }
         try {
             return $this->mapJSONToProperties($jsonObj, new ReflectionClass($obj));
+        } catch (Exception $e) {
+            throw new JSONParserException("Unable to map json", 0, $e);
         }
-        catch(Exception $e){
-            throw new JSONParserException("Unable to map json", 0 , $e);
+        return null;
+    }
+
+    private function generatePropertiesAnnotationMap(ReflectionClass $refObj)
+    {
+        if (null != $refObj) {
+            foreach ($refObj->getProperties() as $property) {
+                preg_match(self::ANNOTATION_REG_X, $property->getDocComment(), $propertyAnnotations);
+                if(null != $propertyAnnotations && count($propertyAnnotations) == 2){
+                    $this -> attributePropertyMap[$propertyAnnotations[1]] = $property -> name;
+                }
+            }
+        }
+
+    }
+
+    private function getClassObj(ReflectionClass $refObj){
+        if(null != $refObj) {
+            $className = $refObj->getName();
+            $classFullNameSpace = $refObj->getNamespaceName() . "\\" . $className;
+            $classObj = new $classFullNameSpace;
+            return $classObj;
         }
         return null;
     }
 
     private function  mapJSONToProperties($jsonObj, ReflectionClass $refObj)
     {
-        $classFullNameSpace = $refObj -> getNamespaceName()."\\".$refObj -> getName();
-        $classObj = new $classFullNameSpace;
+        $this->generatePropertiesAnnotationMap($refObj);
+        $classObj = $this -> getClassObj($refObj);
         $className = $refObj->getParentClass();
         foreach ($jsonObj as $key => $value) {
-            if (!isset($this->classObject[$className][$key])) {
-                $this->classObject[$className][$key] = $this->getPropertyAttributes($refObj, $key);
+            $classPropName = $key;
+            if(isset($this -> attributePropertyMap[$key])){
+                $classPropName = $this -> attributePropertyMap[$classPropName];
+                $this->classObject[$className][$classPropName] = $this->getPropertyAttributes($refObj, $classPropName);
             }
-            $propertyAttributes = $this->classObject[$className][$key];
-            if($propertyAttributes[self::PROP_VALID] === true){
-                if($propertyAttributes[self::PROP_SETTER] != null){
-                    $sMethod = $propertyAttributes[self::PROP_SETTER] -> name;
-                    if (is_object($value)) {
-                        $objClass = $this -> getClassFromNameSpace($refObj -> getNamespaceName(), $key);
-                        if($objClass != null) {
-                            $value = $this->mapJSONToProperties($value, new ReflectionClass(new $objClass));
-                        }
+            else if (!isset($this->classObject[$className][$classPropName])) {
+                $this->classObject[$className][$classPropName] = $this->getPropertyAttributes($refObj, $classPropName);
+            }
+            $propertyAttributes = $this->classObject[$className][$classPropName];
+            if ($propertyAttributes[self::PROP_VALID] === true) {
+                if (is_object($value)) {
+                    $objClass = $this->getClassFromNameSpace($refObj->getNamespaceName(), $key);
+                    if ($objClass != null) {
+                        $value = $this->mapJSONToProperties($value, new ReflectionClass(new $objClass));
                     }
-                    $classObj -> $sMethod($value);
-                }else{
-                    if($propertyAttributes[self::PROP_ACCESSIBLE] === true) {
-                        $classObj->$key = $value;
+                }
+                if ($propertyAttributes[self::PROP_SETTER] != null) {
+                    $sMethod = $propertyAttributes[self::PROP_SETTER]->name;
+                    $classObj->$sMethod($value);
+                } else {
+                    if ($propertyAttributes[self::PROP_ACCESSIBLE] === true) {
+                        $classObj->$classPropName = $value;
                     }
                 }
             }
@@ -72,20 +101,24 @@ class JSONParser
         return $classObj;
     }
 
-    private function getClassFromNameSpace($classNameSpace, $subClassName){
+    private
+    function getClassFromNameSpace($classNameSpace, $subClassName)
+    {
         if ($classNameSpace != '\\') {
-            return  $classNameSpace . '\\' . ucfirst($subClassName);
+            return $classNameSpace . '\\' . ucfirst($subClassName);
         }
+
         return null;
     }
 
-    private function getPropertyAttributes(ReflectionClass $rcObj, $propName)
+    private
+    function getPropertyAttributes(ReflectionClass $rcObj, $propName)
     {
         $propertyAttribute = $this->getPropertyAttributesMap();
         $propertyAttribute[self::PROP_VALID] = $rcObj->hasProperty($propName);
         if ($propertyAttribute[self::PROP_VALID]) {
             $rcProp = $rcObj->getProperty($propName);
-            if($rcProp->getModifiers() === self::IS_PUBLIC){
+            if ($rcProp->getModifiers() === self::IS_PUBLIC) {
                 $propertyAttribute[self::PROP_ACCESSIBLE] = true;
             }
             $setterMethodName = "set" . ucfirst($propName);
