@@ -19,6 +19,28 @@ Eg: JSON -
 }
 ```
 
+Class file, 
+```php
+<?php 
+Class Emploee{
+
+/**
+* @var
+* @JsonProperty("firstName")
+*/
+private $name;
+
+/**
+* @var
+* @JsonProperty("contact")
+*/
+private $contactInformation;
+
+...
+...
+
+```
+
 Application code,
 ```php
 <?php 
@@ -30,11 +52,11 @@ $obj = $jsonParser->map($json, new Employee());
 
 Will return Object of class Employee, 
 ```php
-object(Employee)[6]
-  protected 'firstName' => string 'Abhishek' (length=8)
-  protected 'lastName' => string 'Taneja' (length=6)
-  protected 'contact' => 
-    object(Contact)[10]
+object(Employee)[8]
+  private 'name' => string 'Abhishek' (length=8)
+  private 'lastName' => string 'Taneja' (length=6)
+  public 'contactInformation' => 
+    object(Contact)[12]
       protected 'email' => string 'abhishek.taneja@live.com' (length=24)
       protected 'twitter' => string '@abhishek_taneja' (length=16)
 ```
