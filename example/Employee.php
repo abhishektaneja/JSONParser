@@ -22,7 +22,7 @@ class Employee
      * @var
      * @JsonProperty("contact")
      */
-    public $contactInformation;
+    private $contactInformation;
 
     /**
      * @return mixed

@@ -9,6 +9,10 @@ class Contact
 {
     protected $email;
 
+    /**
+     * @var
+     * @JsonProperty("twitter")
+     */
     protected $twitter;
 
     /**
